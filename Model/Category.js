@@ -1,0 +1,19 @@
+const { DataTypes } = require('sequelize');
+const sequelize = require('../Config/dbConnect'); 
+const Category = sequelize.define('Category', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+});   
+
+// Sync the model with the database, creating the table if it doesn't exist
+Category.sync()
+  .then(() => {
+    console.log('Category table has been created, if it did not already exist.');
+  })
+  .catch((error) => {
+    console.error('Error creating Category table:', error);
+  });
+
+module.exports = Category;
