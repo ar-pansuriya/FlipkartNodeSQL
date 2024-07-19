@@ -7,7 +7,7 @@ const Category = sequelize.define('Category', {
   }
 });   
 
-// Sync the model with the database, creating the table if it doesn't exist
+
 Category.sync()
   .then(() => {
     console.log('Category table has been created, if it did not already exist.');
