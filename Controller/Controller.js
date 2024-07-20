@@ -1,3 +1,7 @@
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const upload = require("../Config/MulterConfig");
 const Category = require("../Model/Category");
 const Order = require("../Model/order");
 const Product = require("../Model/Product");
@@ -13,24 +17,80 @@ const getAllCategories = async (req, res) => {
     }
 }
 
-
-const postProducts=async(req,res)=>{
-    try {
-        const product = await Product.create(req.body)
-        console.log('New user created:', product.toJSON());
-        if(!product)
-        {
-         return  res.json({success:false,message:"Not Insert",statusCode:400})
+const postProduct = async (req, res) => {
+    upload(req, res, async function (err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json({ message: err.message, success: false });
+        } else if (err) {
+            return res.status(500).json({ message: err.message, success: false });
         }
-        res.status(200).json({success:true,message:"Insert",data:product.toJSON()})
 
-      } catch (error) {
-        res.status(500).json({success:false,message:error.message})
-      }
+        // Retrieve form data from req.body
+        const { productName, productDescription, CategoryId, price, subprice, stockQuantity, size, color, rank } = req.body;
+
+        // Construct array of uploaded file URLs
+        const files = req.files;
+        // const baseUrl = `http://localhost:${process.env.PORT || 3000}/ProductImages/`;
+        const uploadedFiles = files.map(file => '/ProductImages/' + file.filename);
+
+        try {
+            // Save product data to database
+            const newProduct = await Product.create({
+                productName,
+                productDescription,
+                CategoryId,
+                price,
+                subprice,
+                stockQuantity,
+                productImages: uploadedFiles,
+                size,
+                color,
+                rank
+            });
+
+            res.status(200).json({
+                message: 'Product saved successfully!',
+                data: newProduct,
+                success: true
+            });
+        } catch (error) {
+            res.status(500).json({ message: error.message, success: false });
+        }
+    });
+}
+
+const editProduct = async (req, res) => {
+    console.log('pppp');
+    const { productId } = req.params;
+    const updateData = req.body;
+    console.log(productId, updateData);
+    try {
+        // Find the existing product by ID
+        const product = await Product.findByPk(productId);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found', success: false });
+        }
+
+        // Update product details with provided fields only
+        Object.assign(product, updateData);
+
+        // Save updated product
+        await product.save();
+
+        // Respond with the updated product data
+        res.status(200).json({
+            message: 'Product updated successfully!',
+            success: true,
+            product // Return the updated product data
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message, success: false });
+    }
 }
 
 
-const postOrders=async(req,res)=>{
+const postOrders = async (req, res) => {
     try {
         const order = await Order.create(req.body)
         console.log('New order created:', order.toJSON());
@@ -38,11 +98,11 @@ const postOrders=async(req,res)=>{
         {
          return  res.status(404).json({success:false,message:"Not Insert"})
         }
-        res.json({success:true,message:"Insert",statusCode:200,data:order.toJSON()})
+        res.json({ success: true, message: "Insert", statusCode: 200, data: order.toJSON() })
 
-      } catch (error) {
-        res.status(500).json({success:false,message:error.message})
-      }
+    } catch (error) {
+        res.json({ success: false, message: error.message, statusCode: 400 })
+    }
 }
 
 // with first sort by rank and then in 10 datas for pagination
@@ -135,7 +195,8 @@ const getCategoriesById=async(req,res)=>{
 
 module.exports = {
     getAllCategories,
-    postProducts,
+    postProduct,
+    editProduct,
     getProductByRank,
     postOrders,
     getProductById,

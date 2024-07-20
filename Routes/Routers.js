@@ -1,21 +1,28 @@
 const express = require('express');
-const { getAllCategories,postProducts,getProductByRank,postOrders,getProductById,deleteProductById,getCategoriesById } = require('../Controller/Controller');
+const { getAllCategories,postProducts,getProductByRank,postOrders,getProductById,deleteProductById,getCategoriesById, editProduct } = require('../Controller/Controller');
 const router = express.Router();
 
-// GET /categories - Retrieve all categories
+
 router.get('/categories', getAllCategories);
-
-router.post('/products',postProducts)
-
-router.post('/order',postOrders)
 
 router.get('/products', getProductByRank);
 
-router.get('/products/:productId',getProductById)
+router.get('/products/:categoryId',getCategoriesById);
 
-router.delete('/products/:productId',deleteProductById)
+router.get('/products/:productId',getProductById);
 
-router.get('/products/:categoryId',getCategoriesById)
+router.post('/products',postProducts);
+
+router.put('/products/:productId',editProduct);
+
+router.delete('/products/:productId',deleteProductById);
+
+router.post('/order',postOrders);
+
+
+
+
+
 
 
 module.exports = router;
