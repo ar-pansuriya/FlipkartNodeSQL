@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const upload = require("../Config/MulterConfig");
 const Category = require("../Model/Category");
-const Order = require("../Model/order");
 const Product = require("../Model/Product");
 
 
@@ -89,24 +88,7 @@ const editProduct = async (req, res) => {
     }
 }
 
-
-const postOrders = async (req, res) => {
-    try {
-        const order = await Order.create(req.body)
-        console.log('New order created:', order.toJSON());
-        if(!order)
-        {
-         return  res.status(404).json({success:false,message:"Not Insert"})
-        }
-        res.json({ success: true, message: "Insert", statusCode: 200, data: order.toJSON() })
-
-    } catch (error) {
-        res.json({ success: false, message: error.message, statusCode: 400 })
-    }
-}
-
-// with first sort by rank and then in 10 datas for pagination
-const getProductByRank = async (req, res) => {
+const getAllProducts = async (req, res) => {
     try {
         
         const pageNumber = parseInt(req.query.pageNumber, 10) || 1;
@@ -132,8 +114,7 @@ const getProductByRank = async (req, res) => {
       }
 }
 
-// get product By productId
-const getProductById = async (req, res) => {
+const getProductDetail = async (req, res) => {
     try {
         const id = req.params.productId;
         const products = await Product.findByPk(id);
@@ -145,12 +126,22 @@ const getProductById = async (req, res) => {
       }
 }
 
-// delete product By productId
-const deleteProductById = async (req, res) => {
+const deleteProduct = async (req, res) => {
     try {
         const id = req.params.productId;
+        const product = await Product.findOne({ where: { productId: id } });
+        if(!product) return res.status(404).json({success:false,message:"Not Founded"});
+         // Delete product images from the file system
+         const imagePaths = product.productImages;
+         imagePaths.forEach(imagePath => {
+             const fullPath = path.join(__dirname, '..', imagePath);
+             fs.unlink(fullPath, err => {
+                 if (err) {
+                     console.error(`Error deleting file ${imagePath}:`, err);
+                 }
+             });
+         }); 
         const products = await Product.destroy({where:{productId:id}});
-        if(!products) return res.status(404).json({success:false,message:"Not Founded"})
         res.status(200).json({success:true,message:"Products Deleted",data:products})
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -158,8 +149,7 @@ const deleteProductById = async (req, res) => {
       }
 }
 
-
-const getCategoriesById=async(req,res)=>{
+const getAllProductsByCategory=async(req,res)=>{
     try {
         const id=req.params.categoryId
         const category = await Category.findByPk(id);
@@ -197,9 +187,8 @@ module.exports = {
     getAllCategories,
     postProduct,
     editProduct,
-    getProductByRank,
-    postOrders,
-    getProductById,
-    deleteProductById,
-    getCategoriesById
+    getAllProducts,
+    getProductDetail,
+    deleteProduct,
+    getAllProductsByCategory
 }

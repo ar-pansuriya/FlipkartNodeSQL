@@ -1,1 +1,6 @@
 node_modules
+# Ignore the dbConnect.js file
+Config/dbConnect.js
+
+# Ignore the ProductImages directory
+ProductImages/

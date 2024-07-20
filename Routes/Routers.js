@@ -1,26 +1,21 @@
 const express = require('express');
-const { getAllCategories,postProducts,getProductByRank,postOrders,getProductById,deleteProductById,getCategoriesById, editProduct } = require('../Controller/Controller');
+const { getAllCategories,postProduct, editProduct, getAllProducts, getAllProductsByCategory, getProductDetail, deleteProduct } = require('../Controller/Controller');
 const router = express.Router();
 
 
 router.get('/categories', getAllCategories);
 
-router.get('/products', getProductByRank);
+router.get('/products', getAllProducts);
 
-router.get('/products/:categoryId',getCategoriesById);
+router.get('/category/:categoryId',getAllProductsByCategory);
 
-router.get('/products/:productId',getProductById);
+router.get('/products/:productId',getProductDetail);
 
-router.post('/products',postProducts);
+router.post('/products',postProduct);
 
 router.put('/products/:productId',editProduct);
 
-router.delete('/products/:productId',deleteProductById);
-
-router.post('/order',postOrders);
-
-
-
+router.delete('/products/:productId',deleteProduct);
 
 
 
