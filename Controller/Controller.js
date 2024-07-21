@@ -2,9 +2,20 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
-const upload = require("../Config/MulterConfig");
 const Category = require("../Model/Category");
 const Product = require("../Model/Product");
+const upload = require('../Config/multerConfig');
+
+
+const AllProducts= async (req, res) => {
+    try {
+        const categories = await Product.findAll();
+        res.status(200).json({ data: categories, message: 'Product fetched', success: true });
+    } catch (error) {
+        console.error('Error fetching Product:', error);
+        res.status(500).json({success:false,message:error.message})
+    }
+}
 
 
 const getAllCategories = async (req, res) => {
@@ -219,10 +230,11 @@ const adminLogin=async(req,res)=>{
         const users =  {username: 'Admin@123', password: 'Str0ngP@ssw0rd!' }
     const { username, password } = req.body;
 
+
     if(username===users.username && password===users.password)
     {
         const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '1m' });
-        res.status(200).json({data:accessToken,message:"User is Valid",success:true });
+        res.status(200).json({token:accessToken,message:"User is Valid",success:true });
     }
     else {
         res.status(404).json({message:'Username or password incorrect',success:false})
@@ -243,5 +255,6 @@ module.exports = {
     getAllProductsByCategory,
     postOrders,
     getOrders,
-    adminLogin
+    adminLogin,
+    AllProducts
 }
