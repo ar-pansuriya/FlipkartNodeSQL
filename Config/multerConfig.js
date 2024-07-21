@@ -48,6 +48,6 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 3 * 1024 * 1024 }, // 3 MB limit
   fileFilter: fileFilter
-}).array('files', 5); // Adjust the limit as needed
+}).array('files', 4); // Adjust the limit as needed
 
 module.exports = upload;
