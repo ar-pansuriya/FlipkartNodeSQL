@@ -1,6 +1,7 @@
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const upload = require("../Config/MulterConfig");
 const Category = require("../Model/Category");
 const Product = require("../Model/Product");
@@ -88,6 +89,22 @@ const editProduct = async (req, res) => {
     }
 }
 
+
+const postOrders = async (req, res) => {
+    try {
+        const order = await Order.create(req.body)
+        if(!order)
+        {
+         return  res.status(404).json({success:false,message:"Not Insert"})
+        }
+        res.status(200).json({ success: true, message: "Insert", data: order.toJSON() })
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+// with first sort by rank and then in 10 datas for pagination
 const getAllProducts = async (req, res) => {
     try {
         
@@ -183,6 +200,39 @@ const getAllProductsByCategory=async(req,res)=>{
       }
   }
 
+
+  const getOrders = async (req, res) => {
+    try {
+        const orders = await Order.findAll();
+        if(orders.length==0) return res.status(404).json({ message: 'Not Founded', success: true });
+        res.status(200).json({ data: orders, message: 'orders fetched', success: true });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({success:false,message:error.message})
+    }
+}
+
+
+const adminLogin=async(req,res)=>{
+
+    try {
+        const users =  {username: 'Admin@123', password: 'Str0ngP@ssw0rd!' }
+    const { username, password } = req.body;
+
+    if(username===users.username && password===users.password)
+    {
+        const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '1m' });
+        res.status(200).json({data:accessToken,message:"User is Valid",success:true });
+    }
+    else {
+        res.status(404).json({message:'Username or password incorrect',success:false})
+    }
+    } catch (error) {
+        res.status(500).json({success:false,error:error.message})
+    }
+    
+}
+
 module.exports = {
     getAllCategories,
     postProduct,
@@ -190,5 +240,8 @@ module.exports = {
     getAllProducts,
     getProductDetail,
     deleteProduct,
-    getAllProductsByCategory
+    getAllProductsByCategory,
+    postOrders,
+    getOrders,
+    adminLogin
 }

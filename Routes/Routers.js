@@ -1,5 +1,15 @@
 const express = require('express');
-const { getAllCategories,postProduct, editProduct, getAllProducts, getAllProductsByCategory, getProductDetail, deleteProduct } = require('../Controller/Controller');
+const {  getAllCategories,
+    postProduct,
+    editProduct,
+    getAllProducts,
+    getProductDetail,
+    deleteProduct,
+    getAllProductsByCategory,
+    postOrders,
+    getOrders,
+    adminLogin } = require('../Controller/Controller');
+const authenticateJWT = require('../Middleware/auth');
 const router = express.Router();
 
 
@@ -11,11 +21,19 @@ router.get('/category/:categoryId',getAllProductsByCategory);
 
 router.get('/products/:productId',getProductDetail);
 
-router.post('/products',postProduct);
+router.post('/products',authenticateJWT,postProduct);
 
-router.put('/products/:productId',editProduct);
+router.put('/products/:productId',authenticateJWT,editProduct);
 
-router.delete('/products/:productId',deleteProduct);
+router.delete('/products/:productId',authenticateJWT,deleteProduct);
+
+router.post('/orders',authenticateJWT,postOrders);
+
+router.get('/orders',authenticateJWT,getOrders)
+
+router.post('/admin/login',adminLogin)
+
+
 
 
 
