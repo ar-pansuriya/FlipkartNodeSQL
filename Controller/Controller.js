@@ -8,24 +8,13 @@ const upload = require('../Config/multerConfig');
 const Order = require('../Model/order');
 
 
-const AllProducts= async (req, res) => {
-    try {
-        const categories = await Product.findAll();
-        res.status(200).json({ data: categories, message: 'Product fetched', success: true });
-    } catch (error) {
-        console.error('Error fetching Product:', error);
-        res.status(500).json({success:false,message:error.message})
-    }
-}
-
-
 const getAllCategories = async (req, res) => {
     try {
         const categories = await Category.findAll();
         res.status(200).json({ data: categories, message: 'Categories fetched', success: true });
     } catch (error) {
         console.error('Error fetching categories:', error);
-        res.status(500).json({success:false,message:error.message})
+        res.status(500).json({ success: false, message: error.message })
     }
 }
 
@@ -100,9 +89,8 @@ const editProduct = async (req, res) => {
 const postOrders = async (req, res) => {
     try {
         const order = await Order.create(req.body)
-        if(!order)
-        {
-         return  res.status(404).json({success:false,message:"Not Insert"})
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Not Insert" })
         }
         res.status(200).json({ success: true, message: "Insert", data: order.toJSON() })
 
@@ -114,158 +102,157 @@ const postOrders = async (req, res) => {
 // with first sort by rank and then in 10 datas for pagination
 const getAllProducts = async (req, res) => {
     try {
-        
+
         const pageNumber = parseInt(req.query.pageNumber, 10) || 1;
-        const pageSize = parseInt(req.query.pageSize, 10) || 10; 
-    
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
         if (pageNumber < 1 || pageSize < 1) {
-          return res.status(400).json({ error: 'Invalid page number or page size' });
+            return res.status(400).json({ error: 'Invalid page number or page size' });
         }
-    
+
         const products = await Product.findAll({
-          order: [['rank', 'ASC']], 
-          limit: pageSize, 
-          offset: (pageNumber - 1) * pageSize, 
+            order: [['rank', 'ASC']],
+            limit: pageSize,
+            offset: (pageNumber - 1) * pageSize,
         });
-    
 
-        if(products.length==0) return res.status(404).json({success:false,message:"Not Founded"})
 
-        res.status(200).json({success:true,message:"Products Founded",data:products})
-      } catch (error) {
+        if (products.length == 0) return res.status(404).json({ success: false, message: "Not Founded" })
+
+        res.status(200).json({ success: true, message: "Products Founded", data: products })
+    } catch (error) {
         console.error('Error fetching products:', error);
-         res.status(500).json({success:false,message:error.message})
-      }
+        res.status(500).json({ success: false, message: error.message })
+    }
 }
 
 const getProductDetail = async (req, res) => {
     try {
         const id = req.params.productId;
         const products = await Product.findByPk(id);
-        if(!products) return res.status(404).json({success:false,message:"Produc Not Founded"})
-        res.status(200).json({success:true,message:"Products Founded",data:products})
-      } catch (error) {
+        if (!products) return res.status(404).json({ success: false, message: "Produc Not Founded" })
+        res.status(200).json({ success: true, message: "Products Founded", data: products })
+    } catch (error) {
         console.error('Error fetching products:', error);
-         res.status(500).json({success:false,message:error.message})
-      }
+        res.status(500).json({ success: false, message: error.message })
+    }
 }
 
 const deleteProduct = async (req, res) => {
     try {
         const id = req.params.productId;
         const product = await Product.findOne({ where: { productId: id } });
-        if(!product) return res.status(404).json({success:false,message:"Not Founded"});
-         // Delete product images from the file system
-         
-         const imagePaths = product.productImages;
-         imagePaths.forEach(imagePath => {
-             const fullPath = path.join(__dirname, '..', imagePath);
-             fs.unlink(fullPath, err => {
-                 if (err) {
-                     console.error(`Error deleting file ${imagePath}:`, err);
-                 }
-             });
-         }); 
-        const products = await Product.destroy({where:{productId:id}});
-        res.status(200).json({success:true,message:"Products Deleted",data:products})
-      } catch (error) {
+        if (!product) return res.status(404).json({ success: false, message: "Not Founded" });
+        // Delete product images from the file system
+
+        const imagePaths = product.productImages;
+        imagePaths.forEach(imagePath => {
+            const fullPath = path.join(__dirname, '..', imagePath);
+            fs.unlink(fullPath, err => {
+                if (err) {
+                    console.error(`Error deleting file ${imagePath}:`, err);
+                }
+            });
+        });
+        const products = await Product.destroy({ where: { productId: id } });
+        res.status(200).json({ success: true, message: "Products Deleted", data: products })
+    } catch (error) {
         console.error('Error fetching products:', error);
-         res.status(500).json({success:false,message:error.message})
-      }
+        res.status(500).json({ success: false, message: error.message })
+    }
 }
 
-const testing=async (req,res)=>{
+const testing = async (req, res) => {
     try {
         const id = req.params.productId;
         const products = await Product.findByPk(1);
         process.exit(1)
-        if(!products) return res.status(404).json({success:false,message:"Produc Not Founded"})
-            res.status(200).json({success:true,message:"Products Founded",data:products})
+        if (!products) return res.status(404).json({ success: false, message: "Produc Not Founded" })
+        res.status(200).json({ success: true, message: "Products Founded", data: products })
     } catch (error) {
         process.exit(1)
     }
 }
 
-const getAllProductsByCategory=async(req,res)=>{
+const getAllProductsByCategory = async (req, res) => {
     try {
-        const id=req.params.categoryId
+        const id = req.params.categoryId
         const category = await Category.findByPk(id);
 
         const pageNumber = parseInt(req.query.pageNumber, 10) || 1;
-        const pageSize = parseInt(req.query.pageSize, 10) || 10; 
-    
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
         if (pageNumber < 1 || pageSize < 1) {
-          return res.status(400).json({ error: 'Invalid page number or page size' });
+            return res.status(400).json({ error: 'Invalid page number or page size' });
         }
-        
+
         if (!category) {
-            return res.status(404).json({success:false,message:"Category not found"})
+            return res.status(404).json({ success: false, message: "Category not found" })
         }
-    
+
         const products = await Product.findAll({
-          where: {
-            CategoryId: category.id
-          },
-          limit: pageSize, 
-          offset: (pageNumber - 1) * pageSize, 
+            where: {
+                CategoryId: category.id
+            },
+            limit: pageSize,
+            offset: (pageNumber - 1) * pageSize,
         });
-    
-        if (products.length==0) {
-            return res.status(404).json({success:false,message:"products not found"})
+
+        if (products.length == 0) {
+            return res.status(404).json({ success: false, message: "products not found" })
         }
-        res.status(200).json({success:true,message:"Products Founded",data:products})
-      } catch (error) {
-        res.status(500).json({success:false,message:error.message})
+        res.status(200).json({ success: true, message: "Products Founded", data: products })
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message })
         console.error('Error fetching category and products:', error);
-      }
-  }
+    }
+}
 
 
-  const getOrders = async (req, res) => {
+const getOrders = async (req, res) => {
     try {
         const orders = await Order.findAll();
-        if(orders.length==0) return res.status(404).json({ message: 'Not Founded', success: true });
+        if (orders.length == 0) return res.status(404).json({ message: 'Not Founded', success: true });
         res.status(200).json({ data: orders, message: 'orders fetched', success: true });
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).json({success:false,message:error.message})
+        res.status(500).json({ success: false, message: error.message })
     }
 }
 
 
-const adminLogin=async(req,res)=>{
+const adminLogin = async (req, res) => {
 
     try {
-        const users =  {username: 'Admin@123', password: 'Str0ngP@ssw0rd!' }
-    const { username, password } = req.body;
+        const users = { username: 'Admin@123', password: 'Str0ngP@ssw0rd!' }
+        const { username, password } = req.body;
 
 
-    if(username===users.username && password===users.password)
-    {
-        const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '30m' });
-        res.status(200).json({token:accessToken,message:"User is Valid",success:true });
-    }
-    else {
-        res.status(404).json({message:'Username or password incorrect',success:false})
-    }
+        if (username === users.username && password === users.password) {
+            const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '30m' });
+            res.status(200).json({ token: accessToken, message: "User is Valid", success: true });
+        }
+        else {
+            res.status(404).json({ message: 'Username or password incorrect', success: false })
+        }
     } catch (error) {
-        res.status(500).json({success:false,error:error.message})
+        res.status(500).json({ success: false, error: error.message })
     }
 }
 
-const deleteOrders=async(req,res)=>{
+const deleteOrders = async (req, res) => {
     try {
         const orders = await Order.destroy({
             where: {}, // No condition, deletes all rows
             truncate: true // This option can be used to reset the auto-increment value
-          });
-          console.log(orders)
-        if(orders) return res.status(404).json({message:"Not Founded"});
-        res.status(200).json({message:"Order Deleted"})
-      } catch (error) {
+        });
+        console.log(orders)
+        if (orders) return res.status(404).json({ message: "Not Founded" });
+        res.status(200).json({ message: "Order Deleted" })
+    } catch (error) {
         console.error('Error fetching Order:', error);
-         res.status(500).json({success:false,message:error.message})
-      }
+        res.status(500).json({ success: false, message: error.message })
+    }
 }
 
 module.exports = {
@@ -279,7 +266,6 @@ module.exports = {
     postOrders,
     getOrders,
     adminLogin,
-    AllProducts,
     deleteOrders,
     testing
 }
