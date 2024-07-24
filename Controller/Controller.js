@@ -174,6 +174,18 @@ const deleteProduct = async (req, res) => {
       }
 }
 
+const testing=async (req,res)=>{
+    try {
+        const id = req.params.productId;
+        const products = await Product.findByPk(1);
+        process.exit(1)
+        if(!products) return res.status(404).json({success:false,message:"Produc Not Founded"})
+            res.status(200).json({success:true,message:"Products Founded",data:products})
+    } catch (error) {
+        process.exit(1)
+    }
+}
+
 const getAllProductsByCategory=async(req,res)=>{
     try {
         const id=req.params.categoryId
@@ -268,5 +280,6 @@ module.exports = {
     getOrders,
     adminLogin,
     AllProducts,
-    deleteOrders
+    deleteOrders,
+    testing
 }

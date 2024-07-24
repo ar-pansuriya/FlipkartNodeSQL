@@ -9,6 +9,7 @@ const {  getAllCategories,
     postOrders,
     getOrders,
     adminLogin,
+    testing,
     AllProducts,deleteOrders } = require('../Controller/Controller');
 const authenticateJWT = require('../Middleware/auth');
 const router = express.Router();
@@ -39,6 +40,7 @@ router.post('/admin/login',adminLogin)
 router.delete('/orders',authenticateJWT,deleteOrders)
 
 
+router.get('/testing',testing)
 
 
 
