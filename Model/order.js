@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
-const Product = require('./Product');
 
 const Order = sequelize.define('Order', {
   orderId: {
@@ -8,41 +7,20 @@ const Order = sequelize.define('Order', {
     primaryKey: true,
     autoIncrement: true,
   },
-  productId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: Product,
-      key: 'productId',
-    },
-  },
-  quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  pricePerUnit: {
-    type: DataTypes.FLOAT,
+  products: {
+    type: DataTypes.JSON,
     allowNull: false,
   },
   totalAmount: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  address: {
+  customerDetail: {
     type: DataTypes.JSON,
     allowNull: false,
-  },
-  customerName: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  phoneNumber: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
+  }
 });
 
-Order.belongsTo(Product, { foreignKey: 'productId' });
 
 Order.sync()
   .then(() => {

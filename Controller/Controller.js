@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Category = require("../Model/Category");
 const Product = require("../Model/Product");
 const upload = require('../Config/multerConfig');
+const Order = require('../Model/order');
 
 
 const AllProducts= async (req, res) => {
@@ -38,7 +39,6 @@ const postProduct = async (req, res) => {
 
         // Retrieve form data from req.body
         const { productName, productDescription, CategoryId, price, subprice, stockQuantity, size, color, rank } = req.body;
-
         // Construct array of uploaded file URLs
         const files = req.files;
         // const baseUrl = `http://localhost:${process.env.PORT || 3000}/ProductImages/`;
@@ -76,20 +76,16 @@ const editProduct = async (req, res) => {
     const updateData = req.body;
     console.log(productId, updateData);
     try {
-        // Find the existing product by ID
         const product = await Product.findByPk(productId);
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found', success: false });
         }
 
-        // Update product details with provided fields only
         Object.assign(product, updateData);
 
-        // Save updated product
         await product.save();
 
-        // Respond with the updated product data
         res.status(200).json({
             message: 'Product updated successfully!',
             success: true,
@@ -146,7 +142,7 @@ const getProductDetail = async (req, res) => {
     try {
         const id = req.params.productId;
         const products = await Product.findByPk(id);
-        if(!products) return res.status(404).json({success:false,message:"Not Founded"})
+        if(!products) return res.status(404).json({success:false,message:"Produc Not Founded"})
         res.status(200).json({success:true,message:"Products Founded",data:products})
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -160,6 +156,7 @@ const deleteProduct = async (req, res) => {
         const product = await Product.findOne({ where: { productId: id } });
         if(!product) return res.status(404).json({success:false,message:"Not Founded"});
          // Delete product images from the file system
+         
          const imagePaths = product.productImages;
          imagePaths.forEach(imagePath => {
              const fullPath = path.join(__dirname, '..', imagePath);
@@ -233,7 +230,7 @@ const adminLogin=async(req,res)=>{
 
     if(username===users.username && password===users.password)
     {
-        const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '1m' });
+        const accessToken = jwt.sign({ username: users.username, password: users.password }, "Str0ngP@ssw0rd!", { expiresIn: '30m' });
         res.status(200).json({token:accessToken,message:"User is Valid",success:true });
     }
     else {
@@ -242,7 +239,21 @@ const adminLogin=async(req,res)=>{
     } catch (error) {
         res.status(500).json({success:false,error:error.message})
     }
-    
+}
+
+const deleteOrders=async(req,res)=>{
+    try {
+        const orders = await Order.destroy({
+            where: {}, // No condition, deletes all rows
+            truncate: true // This option can be used to reset the auto-increment value
+          });
+          console.log(orders)
+        if(orders) return res.status(404).json({message:"Not Founded"});
+        res.status(200).json({message:"Order Deleted"})
+      } catch (error) {
+        console.error('Error fetching Order:', error);
+         res.status(500).json({success:false,message:error.message})
+      }
 }
 
 module.exports = {
@@ -256,5 +267,6 @@ module.exports = {
     postOrders,
     getOrders,
     adminLogin,
-    AllProducts
+    AllProducts,
+    deleteOrders
 }

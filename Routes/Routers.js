@@ -9,7 +9,7 @@ const {  getAllCategories,
     postOrders,
     getOrders,
     adminLogin,
-    AllProducts } = require('../Controller/Controller');
+    AllProducts,deleteOrders } = require('../Controller/Controller');
 const authenticateJWT = require('../Middleware/auth');
 const router = express.Router();
 
@@ -24,27 +24,19 @@ router.get('/category/:categoryId',getAllProductsByCategory);
 
 router.get('/products/:productId',getProductDetail);
 
-// router.post('/products',authenticateJWT,postProduct);
+router.post('/products',authenticateJWT,postProduct);
 
-// router.put('/products/:productId',authenticateJWT,editProduct);
+router.put('/products/:productId',authenticateJWT,editProduct);
 
-// router.delete('/products/:productId',authenticateJWT,deleteProduct);
+router.delete('/products/:productId',authenticateJWT,deleteProduct);
 
-// router.post('/orders',authenticateJWT,postOrders);
+router.post('/orders',authenticateJWT,postOrders);
 
-// router.get('/orders',authenticateJWT,getOrders)
-
-router.post('/products',postProduct);
-
-router.put('/products/:productId',editProduct);
-
-router.delete('/products/:productId',deleteProduct);
-
-router.post('/orders',postOrders);
-
-router.get('/orders',getOrders)
+router.get('/orders',authenticateJWT,getOrders)
 
 router.post('/admin/login',adminLogin)
+
+router.delete('/orders',authenticateJWT,deleteOrders)
 
 
 
