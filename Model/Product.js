@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../Config/dbConnect'); 
-const Category = require('./Category'); 
+const sequelize = require('../Config/dbConnect');
+const Category = require('./Category');
 
 const Product = sequelize.define('Product', {
   productId: {
@@ -37,7 +37,7 @@ const Product = sequelize.define('Product', {
     allowNull: true,
   },
   productImages: {
-    type: DataTypes.JSON, 
+    type: DataTypes.JSON,
     allowNull: true,
   },
   size: {
@@ -51,6 +51,7 @@ const Product = sequelize.define('Product', {
   rank: {
     type: DataTypes.INTEGER,
     allowNull: true,
+    defaultValue: 100
   },
 });
 
@@ -298,7 +299,7 @@ Product.belongsTo(Category, { foreignKey: 'CategoryId' });
 //     rank: 20,
 //   }
 // ];
-  
+
 
 
 

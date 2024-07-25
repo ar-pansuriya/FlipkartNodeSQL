@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Category = require("../Model/Category");
 const Product = require("../Model/Product");
 const upload = require('../Config/multerConfig');
+const AdminDetail = require('../Model/Admin');
 const Order = require('../Model/order');
 
 
@@ -87,6 +88,7 @@ const editProduct = async (req, res) => {
 
 
 const postOrders = async (req, res) => {
+    console.log(req.body);
     try {
         const order = await Order.create(req.body)
         if (!order) {
@@ -95,6 +97,7 @@ const postOrders = async (req, res) => {
         res.status(200).json({ success: true, message: "Insert", data: order.toJSON() })
 
     } catch (error) {
+        console.log(error.message);
         res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -116,10 +119,12 @@ const getAllProducts = async (req, res) => {
             offset: (pageNumber - 1) * pageSize,
         });
 
-
+        const totalResult = await Product.findAll({
+            order: [['rank', 'ASC']],
+        });
         if (products.length == 0) return res.status(404).json({ success: false, message: "Not Founded" })
 
-        res.status(200).json({ success: true, message: "Products Founded", data: products })
+        res.status(200).json({ success: true, message: "Products Founded", data: products, totalResult: totalResult.length })
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ success: false, message: error.message })
@@ -144,7 +149,6 @@ const deleteProduct = async (req, res) => {
         const product = await Product.findOne({ where: { productId: id } });
         if (!product) return res.status(404).json({ success: false, message: "Not Founded" });
         // Delete product images from the file system
-
         const imagePaths = product.productImages;
         imagePaths.forEach(imagePath => {
             const fullPath = path.join(__dirname, '..', imagePath);
@@ -197,11 +201,15 @@ const getAllProductsByCategory = async (req, res) => {
             limit: pageSize,
             offset: (pageNumber - 1) * pageSize,
         });
-
+        const totalResult = await Product.findAll({
+            where: {
+                CategoryId: category.id
+            },
+        });
         if (products.length == 0) {
             return res.status(404).json({ success: false, message: "products not found" })
         }
-        res.status(200).json({ success: true, message: "Products Founded", data: products })
+        res.status(200).json({ success: true, message: "Products Founded", data: products, totalResult: totalResult.length })
     } catch (error) {
         res.status(500).json({ success: false, message: error.message })
         console.error('Error fetching category and products:', error);
@@ -255,6 +263,73 @@ const deleteOrders = async (req, res) => {
     }
 }
 
+const isGoogleEnable = async (req, res) => {
+    try {
+        // Replace 'admin1' with the actual username you're looking for
+        const adminDetail = await AdminDetail.findOne({ where: { username: 'Admin@123' } });
+        if (adminDetail) {
+            res.status(200).json({
+                message: 'Data fetched',
+                success: true,
+                isGoogleEnabled: adminDetail.isGoogleEnabled,
+                upi:adminDetail.upi
+            });
+        } else {
+            res.status(404).json({ message: 'Admin not found', success: false });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'An error occurred', error: error.message, success: false });
+    }
+}
+
+const getAdminDetail = async (req, res) => {
+    try {
+        // Replace 'admin1' with the actual username you're looking for
+        const { adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username,upi } = await AdminDetail.findOne({ where: { username: 'Admin@123' } });
+        if (adminId) {
+            res.status(200).json({
+                message: 'Data fetched',
+                success: true,
+                adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username,upi
+            });
+        } else {
+            res.status(404).json({ message: 'Admin not found', success: false });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'An error occurred', error: error.message, success: false });
+    }
+}
+
+const updateAdminDetail = async (req, res) => {
+    const { adminId } = req.params;
+    const { isGoogleEnabled, facebookPixelId, googlePixelId, username,upi } = req.body;
+
+    try {
+        if (!adminId) return res.status(400).json({ message: 'Admin ID is required', success: false });
+
+        const adminDetail = await AdminDetail.findByPk(adminId);
+        if (!adminDetail) return res.status(404).json({ message: 'Admin not found', success: false });
+
+        await adminDetail.update({
+            isGoogleEnabled: isGoogleEnabled ?? adminDetail.isGoogleEnabled,
+            facebookPixelId: facebookPixelId ?? adminDetail.facebookPixelId,
+            googlePixelId: googlePixelId ?? adminDetail.googlePixelId,
+            username: username ?? adminDetail.username,
+            upi:upi??adminDetail.upi
+        });
+
+        res.status(200).json({
+            message: 'Admin details updated successfully',
+            success: true,
+            adminId, isGoogleEnabled:adminDetail.isGoogleEnabled, facebookPixelId:adminDetail.facebookPixelId, googlePixelId:adminDetail.googlePixelId, username:adminDetail.username,upi:adminDetail.upi
+        });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: 'An error occurred', error: error.message, success: false });
+    }
+};
+
+
 module.exports = {
     getAllCategories,
     postProduct,
@@ -267,5 +342,8 @@ module.exports = {
     getOrders,
     adminLogin,
     deleteOrders,
-    testing
+    testing,
+    isGoogleEnable,
+    getAdminDetail,
+    updateAdminDetail
 }

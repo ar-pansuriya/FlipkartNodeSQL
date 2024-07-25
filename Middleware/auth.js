@@ -10,7 +10,7 @@ const authenticateJWT = (req, res, next) => {
         if (BearerToken) {
             jwt.verify(BearerToken, "Str0ngP@ssw0rd!", (err, user) => {
                 if (err) {
-                    return res.status(403).json({message:"Not Authorized User", success:false,token:false});
+                    return res.status(403).json({message:"Not Authorized Admin", success:false,token:false});
                 }
                 req.user = user;
                 next();

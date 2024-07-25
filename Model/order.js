@@ -12,7 +12,7 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
   totalAmount: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   customerDetail: {

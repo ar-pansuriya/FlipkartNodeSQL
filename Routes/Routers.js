@@ -1,5 +1,5 @@
 const express = require('express');
-const {  getAllCategories,
+const { getAllCategories,
     postProduct,
     editProduct,
     getAllProducts,
@@ -10,25 +10,30 @@ const {  getAllCategories,
     getOrders,
     adminLogin,
     testing,
-    deleteOrders } = require('../Controller/Controller');
+    deleteOrders,
+    isGoogleEnable,
+    getAdminDetail,
+    updateAdminDetail } = require('../Controller/Controller');
+    
+
 const authenticateJWT = require('../Middleware/auth');
 const router = express.Router();
 
-
 router.get('/categories', getAllCategories);
-router.get('/products', authenticateJWT,getAllProducts);
-// router.get('/product',AllProducts)
+router.get('/products',getAllProducts);
 router.get('/category/:categoryId',getAllProductsByCategory);
 router.get('/products/:productId',getProductDetail);
 router.post('/products',authenticateJWT,postProduct);
 router.get('/testing',testing)
 router.put('/products/:productId',authenticateJWT,editProduct);
 router.delete('/products/:productId',authenticateJWT,deleteProduct);
-router.post('/orders',authenticateJWT,postOrders);
+router.post('/orders',postOrders);
 router.get('/orders',authenticateJWT,getOrders)
 router.post('/admin/login',adminLogin)
 router.delete('/orders',authenticateJWT,deleteOrders)
-
+router.get('/isGoogleEnable', isGoogleEnable);
+router.get('/adminDetail', getAdminDetail);
+router.put('/admin/:adminId', updateAdminDetail);
 
 
 
