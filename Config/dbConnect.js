@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
     dialect: "mysql",
     dialectOptions: {
       ssl: {
-        ca: fs.readFileSync(path.join(__dirname, "..", "ca-certificate.crt")), // Adjusted path to go one level up
+        ca: fs.readFileSync(path.join(__dirname, "ca-certificate.crt")), // Adjusted path to go one level up
       },
     },
   }
