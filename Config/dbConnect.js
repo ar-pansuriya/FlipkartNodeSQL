@@ -3,21 +3,17 @@ const fs = require("fs");
 const path = require("path");
 
 // Sequelize connection to remote MySQL database
-const sequelize = new Sequelize(
-  "defaultdb",
-  "doadmin",
-  "AVNS_Dfb1DQN4Fixm4-H-acL",
-  {
-    host: "db-mysql-blr1-86042-do-user-17334879-0.f.db.ondigitalocean.com",
-    port: 25060,
-    dialect: "mysql",
-    dialectOptions: {
-      ssl: {
-        ca: fs.readFileSync(path.join(__dirname, "ca-certificate.crt")), // Adjusted path to go one level up
-      },
+const sequelize = new Sequelize('Flipkart1', 'admin', 'Fenil#0566Fenil#0566', {
+  host: 'vigsaley.online',
+  dialect: 'mysql',
+  dialectOptions: {
+    ssl: {
+      ca: fs.readFileSync('/etc/mysql/ssl/ca-cert.pem'),
+      cert: fs.readFileSync('/etc/mysql/ssl/server-cert.pem'),
+      key: fs.readFileSync('/etc/mysql/ssl/server-key.pem'),
     },
-  }
-);
+  },
+});
 
 async function testConnection() {
   try {
