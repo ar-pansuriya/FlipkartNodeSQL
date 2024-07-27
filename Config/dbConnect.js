@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Sequelize connection to remote MySQL database
-const sequelize = new Sequelize('Flipkart1', 'admin', 'Fenil#0566Fenil#0566', {
+const sequelize = new Sequelize('project1', 'admin', 'Fenil#0566Fenil#0566', {
   host: 'vigsaley.online',
   dialect: 'mysql',
   dialectOptions: {
