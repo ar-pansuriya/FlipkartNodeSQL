@@ -10,13 +10,13 @@ console.log(DB_HOST, DB_USER, DB_PASS,DB_NAME);
 const sequelize = new Sequelize(DB_NAME,DB_USER, DB_PASS, {
   host: DB_HOST,
   dialect: 'mysql',
-  // dialectOptions: {
-  //   ssl: {
-  //     ca: fs.readFileSync('/etc/mysql/ssl/ca-cert.pem'),
-  //     cert: fs.readFileSync('/etc/mysql/ssl/server-cert.pem'),
-  //     key: fs.readFileSync('/etc/mysql/ssl/server-key.pem'),
-  //   },
-  // },
+  dialectOptions: {
+    ssl: {
+      ca: fs.readFileSync('/etc/mysql/ssl/ca-cert.pem'),
+      cert: fs.readFileSync('/etc/mysql/ssl/server-cert.pem'),
+      key: fs.readFileSync('/etc/mysql/ssl/server-key.pem'),
+    },
+  },
 });
 
 async function testConnection() {
