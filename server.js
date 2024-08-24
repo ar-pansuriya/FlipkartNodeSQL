@@ -6,6 +6,7 @@ const sequelize=require('./Config/dbConnect');
 const Routes = require('./Routes/Routers');
 const app = express();
 const path = require('path');
+require('dotenv').config();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,7 +22,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'An error occurred!', error: err.message,success: false });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 2024;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

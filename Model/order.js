@@ -7,6 +7,10 @@ const Order = sequelize.define('Order', {
     primaryKey: true,
     autoIncrement: true,
   },
+  uniqueOrderId:{
+    type:DataTypes.STRING,
+    allowNull:false
+  },
   products: {
     type: DataTypes.JSON,
     allowNull: false,
@@ -18,6 +22,14 @@ const Order = sequelize.define('Order', {
   customerDetail: {
     type: DataTypes.JSON,
     allowNull: false,
+  },
+  paymentStatus:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  paymentMode:{
+    type:DataTypes.STRING,
+    allowNull:true
   }
 });
 

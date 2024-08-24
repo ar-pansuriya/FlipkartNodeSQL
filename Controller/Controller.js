@@ -7,6 +7,9 @@ const Product = require("../Model/Product");
 const upload = require('../Config/multerConfig');
 const AdminDetail = require('../Model/Admin');
 const Order = require('../Model/order');
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
+const axios = require('axios');
 
 
 const getAllCategories = async (req, res) => {
@@ -272,7 +275,7 @@ const isGoogleEnable = async (req, res) => {
                 message: 'Data fetched',
                 success: true,
                 isGoogleEnabled: adminDetail.isGoogleEnabled,
-                upi:adminDetail.upi
+                upi: adminDetail.upi
             });
         } else {
             res.status(404).json({ message: 'Admin not found', success: false });
@@ -285,12 +288,12 @@ const isGoogleEnable = async (req, res) => {
 const getAdminDetail = async (req, res) => {
     try {
         // Replace 'admin1' with the actual username you're looking for
-        const { adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username,upi } = await AdminDetail.findOne({ where: { username: 'Admin@123' } });
+        const { adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username, upi, marchantId, keyIndex, PhonePayAPIKey } = await AdminDetail.findOne({ where: { adminId: 1 } });
         if (adminId) {
             res.status(200).json({
                 message: 'Data fetched',
                 success: true,
-                adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username,upi
+                adminId, isGoogleEnabled, facebookPixelId, googlePixelId, username, upi, marchantId, keyIndex, PhonePayAPIKey
             });
         } else {
             res.status(404).json({ message: 'Admin not found', success: false });
@@ -302,7 +305,7 @@ const getAdminDetail = async (req, res) => {
 
 const updateAdminDetail = async (req, res) => {
     const { adminId } = req.params;
-    const { isGoogleEnabled, facebookPixelId, googlePixelId, username,upi } = req.body;
+    const { isGoogleEnabled, facebookPixelId, googlePixelId, username, upi, marchantId, keyIndex, PhonePayAPIKey } = req.body;
 
     try {
         if (!adminId) return res.status(400).json({ message: 'Admin ID is required', success: false });
@@ -315,17 +318,147 @@ const updateAdminDetail = async (req, res) => {
             facebookPixelId: facebookPixelId ?? adminDetail.facebookPixelId,
             googlePixelId: googlePixelId ?? adminDetail.googlePixelId,
             username: username ?? adminDetail.username,
-            upi:upi??adminDetail.upi
+            upi: upi ?? adminDetail.upi,
+            marchantId: marchantId ?? adminDetail.marchantId,
+            keyIndex: keyIndex ?? adminDetail.keyIndex,
+            PhonePayAPIKey: PhonePayAPIKey ?? adminDetail.PhonePayAPIKey
         });
 
         res.status(200).json({
             message: 'Admin details updated successfully',
             success: true,
-            adminId, isGoogleEnabled:adminDetail.isGoogleEnabled, facebookPixelId:adminDetail.facebookPixelId, googlePixelId:adminDetail.googlePixelId, username:adminDetail.username,upi:adminDetail.upi
+            adminId, isGoogleEnabled: adminDetail.isGoogleEnabled, facebookPixelId: adminDetail.facebookPixelId, googlePixelId: adminDetail.googlePixelId, username: adminDetail.username, upi: adminDetail.upi, marchantId: adminDetail.marchantId,
+            keyIndex: adminDetail.keyIndex,
+            PhonePayAPIKey: adminDetail.PhonePayAPIKey
         });
     } catch (error) {
         console.log(error.message);
         res.status(500).json({ message: 'An error occurred', error: error.message, success: false });
+    }
+};
+
+const phonepePayment = async (req, res) => {
+    const { uniqueOrderId } = req.body;
+
+    const order = await Order.findOne({
+        where: { uniqueOrderId },
+    });
+
+    if (!order) throw new Error('Order not found');
+
+    const { dataValues } = order;
+
+    const {marchantId, keyIndex, PhonePayAPIKey } = await AdminDetail.findOne({ where: { adminId: 1 } });
+
+    const transactionid = "Tr-" + uuidv4().slice(-6);
+
+    const payload = {
+        merchantId:marchantId,// for testing PGTESTPAYUAT86
+        merchantTransactionId: transactionid,
+        // merchantUserId: 'MUID-' + uuidv4().slice(-6),
+        name: dataValues.customerDetail.fullName,
+        amount: dataValues.totalAmount * 100,
+        redirectUrl: `${process.env.BACKEND_URL}/api/paymentStatus?transactionid=${transactionid}&uniqueOrderId=${uniqueOrderId}`,
+        redirectMode: "POST",
+        mobileNumber: dataValues.customerDetail.phoneNumber,
+        paymentInstrument: {
+            type: "PAY_PAGE",
+        },
+    };
+
+    const dataPayload = JSON.stringify(payload);
+    dataBase64 = Buffer.from(dataPayload).toString('base64');
+    const fullURL = dataBase64 + '/pg/v1/pay' + PhonePayAPIKey; //for testing 96434309-7796-489d-8924-ab56988a6076 api key or salt key
+    const dataSha256 = crypto.createHash('sha256').update(fullURL).digest('hex');
+
+    const checksum = `${dataSha256}###${keyIndex}`;
+
+    try {
+        const PAY_API_URL = process.env.PHONE_PAY_API_URL;
+
+        const option = {
+            method: 'POST',
+            url: PAY_API_URL,
+            headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                "X-VERIFY": checksum,
+            },
+            data: {
+                request: dataBase64
+            }
+        }
+        const response = await axios(option)
+        const url = response.data.data.instrumentResponse.redirectInfo.url
+        res.status(200).json({ message: 'Successfull', url, success: true });
+    } catch (error) {
+        console.error('Payment initiation failed:', error);
+        res.status(500).json({ error: 'Payment initiation failed' });
+    }
+}
+
+
+const paymentStatus = async (req, res) => {
+    try {
+        const frontendUrl = process.env.FRONTEND_URL;
+        const { transactionid, uniqueOrderId } = req.query;
+        console.log(`Transaction ID from query: ${transactionid}`);
+
+        // Fetch admin details
+        const adminDetails = await AdminDetail.findOne({ where: { adminId: 1 } });
+        if (!adminDetails) {
+            throw new Error('Admin details not found');
+        }
+        const { PhonePayAPIKey, keyIndex,marchantId } = adminDetails;
+        const merchantId = marchantId; // Testing merchant ID
+
+        // Create the string to be hashed
+        const stringToHash = `/pg/v1/status/${merchantId}/${transactionid}${PhonePayAPIKey}`;
+        const sha256 = crypto.createHash('sha256').update(stringToHash).digest('hex');
+        const checksum = `${sha256}###${keyIndex}`;
+        console.log(`Generated Checksum: ${checksum}`);
+
+        // Construct the URL
+        const url = `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${merchantId}/${transactionid}`;
+
+        // Options for the request
+        const options = {
+            method: 'GET',
+            url: url,
+            headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                "X-VERIFY": checksum,
+                'X-MERCHANT-ID': merchantId
+            },
+        };
+
+        // Make the request to PhonePe API
+        console.log('Making API request to PhonePe...');
+        const { data } = await axios(options);
+        console.log('Response from PhonePe:', data);
+        // Determine the status from the PhonePe response
+        const orderStatus = data.success ? data.data.state : 'FAILED';
+        const paymentMode = data.success ? data.data.paymentInstrument.type : null;
+
+        // Update the order status in the database
+        const updateResult = await Order.update(
+            {
+                paymentStatus: orderStatus,
+                paymentMode: paymentMode
+            },
+            { where: { uniqueOrderId } }
+        );
+
+        if (updateResult[0] === 0) {
+            throw new Error('Order not found or update failed');
+        }
+        // Redirect to the frontend with the payment status
+        return res.redirect(`${frontendUrl}?status=${orderStatus}`);
+
+    } catch (error) {
+        console.error('Error occurred during payment status check:', error.message);
+        return res.redirect(`${frontendUrl}?status=FAILED`);
     }
 };
 
@@ -334,6 +467,7 @@ module.exports = {
     getAllCategories,
     postProduct,
     editProduct,
+    paymentStatus,
     getAllProducts,
     getProductDetail,
     deleteProduct,
@@ -341,6 +475,7 @@ module.exports = {
     postOrders,
     getOrders,
     adminLogin,
+    phonepePayment,
     deleteOrders,
     testing,
     isGoogleEnable,

@@ -32,6 +32,18 @@ const AdminDetail = sequelize.define('AdminDetail', {
   upi:{
     type:DataTypes.STRING,
     allowNull:false
+  },
+  marchantId:{
+    type:DataTypes.STRING,
+    allowNull:false
+  },
+  keyIndex:{
+    type: DataTypes.INTEGER,
+    allowNull:false
+  },
+  PhonePayAPIKey:{
+    type:DataTypes.STRING,
+    allowNull:false
   }
 });
 

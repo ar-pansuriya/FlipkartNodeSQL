@@ -13,7 +13,9 @@ const { getAllCategories,
     deleteOrders,
     isGoogleEnable,
     getAdminDetail,
-    updateAdminDetail } = require('../Controller/Controller');
+    updateAdminDetail, 
+    phonepePayment,
+    paymentStatus} = require('../Controller/Controller');
     
 
 const authenticateJWT = require('../Middleware/auth');
@@ -34,6 +36,9 @@ router.delete('/orders',authenticateJWT,deleteOrders)
 router.get('/isGoogleEnable', isGoogleEnable);
 router.get('/adminDetail', getAdminDetail);
 router.put('/admin/:adminId', updateAdminDetail);
+router.post('/payment', phonepePayment);
+router.post('/paymentStatus',paymentStatus);
+
 
 
 
